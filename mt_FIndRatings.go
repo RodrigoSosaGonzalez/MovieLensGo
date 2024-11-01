@@ -10,37 +10,8 @@ import (
 )
 
 func ReadMoviesCsvFile(filename string) dataframe.DataFrame {
-	/*file, err := os.Open(filename)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer file.Close()
 
-	reader := csv.NewReader(file)
-	reader.FieldsPerRecord = -1 // Permite un número variable de campos por registro
-
-	// Leer todas las filas del archivo
-	rows, err := reader.Read()
-	if err != nil {
-		return nil, err
-	}
-
-	var movies []Movie
-	for i, row := range rows {
-		if i == 0 {
-			// Salta la primera fila si es el encabezado
-			continue
-		}
-		movies = append(movies, Movie{
-			MovieID: row[0],
-			Title:   row[1],
-			Genres:  row[2],
-		})
-	}
-
-	return movies */
-	//path := "movies.csv"
-	path := "../FileFrag/dat/in/"
+	path := "./dat/in/"
 
 	df := dataframe.CreateDataFrame(path, filename)
 
@@ -48,40 +19,8 @@ func ReadMoviesCsvFile(filename string) dataframe.DataFrame {
 }
 
 func ReadRatingsCsvFile(filename string) dataframe.DataFrame {
-	/*file, err := os.Open(filename)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
 
-	reader := csv.NewReader(file)
-	reader.FieldsPerRecord = -1 // Permite un número variable de campos por registro
-
-	// Leer todas las filas del archivo
-	rows, err := reader.ReadAll()
-	if err != nil {
-		return nil, err
-	}
-
-	var ratings []Rating
-	for i, row := range rows {
-		if i == 0 {
-			// Salta la primera fila si es el encabezado
-			continue
-		}
-		rating, err := strconv.ParseFloat(row[2], 64)
-		if err != nil {
-			return nil, err
-		}
-		ratings = append(ratings, Rating{
-			UserID:  row[0],
-			MovieID: row[1],
-			Rating:  rating,
-		})
-	}
-
-	return ratings, nil */
-	path := "../FileFrag/dat/out/"
+	path := ".dat/out/"
 
 	df := dataframe.CreateDataFrame(path, filename)
 
@@ -91,7 +30,7 @@ func ReadRatingsCsvFile(filename string) dataframe.DataFrame {
 func Mt_FindRatingsMaster() {
 	fmt.Println("In MtFindRatingsMaster")
 	start := time.Now()
-	nf := 7 // number of files with ratings is also a number of threads for multi-threading
+	nf := 10 // number of files with ratings is also a number of threads for multi-threading
 
 	// kg is a 1D array that contains the Known Genres
 	kg := []string{"Action", "Adventure", "Animation", "Children", "Comedy", "Crime", "Documentary",
@@ -141,9 +80,20 @@ func Mt_FindRatingsMaster() {
 			locVals[i] += ra[i][j]
 		}
 	}
+
+	fmt.Printf("%-3s %-20s %10s %15s\n", "ID", "Genre", "Count", "Average Rating")
+	fmt.Println(strings.Repeat("-", 50))
+
 	for i := 0; i < ng; i++ {
-		fmt.Println(fmt.Sprintf("%2d", i), " ", fmt.Sprintf("%20s", kg[i]), " ", fmt.Sprintf("%8d", locCount[i]))
+		if locCount[i] > 0 {
+			avgRating := locVals[i] / float64(locCount[i])
+			fmt.Printf("%-3d %-20s %10d %15.2f\n", i, kg[i], locCount[i], avgRating)
+		} else {
+			fmt.Printf("%-3d %-20s %10d %15s\n", i, kg[i], locCount[i], "No ratings")
+		}
+
 	}
+
 	duration := time.Since(start)
 	fmt.Println("Duration = ", duration)
 	println("Mt_FindRatingsMaster is Done")
